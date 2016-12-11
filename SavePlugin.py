@@ -28,7 +28,9 @@ class SavePlugin(PithosPlugin):
     _MUSIC_DIR = os.getenv("XDG_MUSIC_DIR") or os.path.expanduser("~/Music")
 
     def on_enable(self):
-        self.song_rating_changed_handle = self.window.connect('song-changed', self.song_changed)
+        self.song_changed_handle = self.window.connect('song-changed', self.song_changed)
+        self.song_ended_handle = self.window.connect('song-ended',
+                                                     self.song_ended)
 
     def song_changed(self, window,  song):
         if song.rating and song.rating_str == 'love':
@@ -60,5 +62,10 @@ class SavePlugin(PithosPlugin):
                 audiofile.tag.album = u"" + song.album
                 audiofile.tag.title = u"" + song.title
                 audiofile.tag.save()
+
+    def song_ended(self, window, song):
+        self.song_changed(self, window, song)
+
     def on_disable(self):
-        self.window.disconnect(self.song_rating_changed_handle)
+        self.window.disconnect(self.song_changed_handle)
+        self.window.disconnect(self.song_ended_handle)
